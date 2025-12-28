@@ -5,6 +5,8 @@ import unicodedata
 from datetime import datetime
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
+import threading
+from flask import Flask
 
 # carregar as variaves do .env
 load_dotenv()
@@ -15,6 +17,13 @@ SHEET_KEY = os.getenv('SHEET_KEY')
 
 # cria uma instancia do bot
 bot = telebot.TeleBot(TOKEN_BOT)
+
+# Cria uma instância do Flask para manter o serviço vivo no Render
+app = Flask(__name__)
+
+@app.route('/')
+def health_check():
+    return {'status': 'ok', 'message': 'Bot is running'}, 200
 
 # --- CONFIGURAÇÃO GOOGLE SHEETS ---
 try:
@@ -164,6 +173,16 @@ def processar_gastos(message):
     
     bot.reply_to(message, mensagem_resposta, parse_mode="Markdown")
 
-if __name__ == "__main__":
+def run_bot():
+    """Executa o bot em uma thread separada"""
     print("✅ Bot iniciado com sucesso")
     bot.infinity_polling()
+
+if __name__ == "__main__":
+    # Inicia o bot em uma thread separada
+    bot_thread = threading.Thread(target=run_bot, daemon=True)
+    bot_thread.start()
+    
+    # Inicia o servidor Flask (necessário para Render manter o serviço ativo)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
