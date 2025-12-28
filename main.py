@@ -11,10 +11,10 @@ load_dotenv()
 
 #busca o token
 TOKEN_BOT = os.getenv('TELEGRAM_TOKEN')
+SHEET_KEY = os.getenv('SHEET_KEY')
 
 # cria uma instancia do bot
 bot = telebot.TeleBot(TOKEN_BOT)
-
 
 # --- CONFIGURAÇÃO GOOGLE SHEETS ---
 try:
@@ -23,9 +23,9 @@ try:
     client = gspread.authorize(creds)
 
     # Abrindo a planilha pelo ID e a aba específica pelo nome
-    planilha_doc = client.open_by_key("1sMTf2W_IgyzvJdyVxZ-p-1Y1INctVdie_IsfIP63dMM")
+    planilha_doc = client.open_by_key(SHEET_KEY)
     planilha = planilha_doc.worksheet("2026")
-    
+
     print("✅ Conexão com Google Sheets estabelecida!")
 except Exception as e:
     print(f"❌ Erro na conexão com Google Sheets: {e}")
